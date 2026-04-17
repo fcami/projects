@@ -1,0 +1,66 @@
+# SPDX-FileCopyrightText: 2026 François Cami <contribs@fcami.net>
+# SPDX-License-Identifier: MIT
+# Azure Pipelines CI — same detect/fan-out pattern as GitHub Actions.
+#
+# Logic lives in infrastructure/ci/ scripts. This file is a thin adapter.
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+schedules:
+  - cron: '0 6 * * 1'
+    displayName: 'Weekly full build'
+    branches:
+      include:
+        - main
+    always: true
+
+stages:
+  - stage: Detect
+    jobs:
+      - job: DetectChanges
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            fetchDepth: 0
+          - bash: |
+              if [ "$(Build.Reason)" = "Schedule" ]; then
+                MATRIX=$(ls -d projects/*/Makefile 2>/dev/null | xargs -I{} dirname {} | xargs -I{} basename {} | jq -R -s -c 'split("\n") | map(select(. != ""))')
+              else
+                MATRIX=$(infrastructure/ci/detect-changes.sh)
+              fi
+              echo "##vso[task.setvariable variable=matrix;isOutput=true]${MATRIX}"
+              echo "Affected subprojects: ${MATRIX}"
+            name: detect
+            displayName: 'Detect changed subprojects'
+
+  - stage: Build
+    dependsOn: Detect
+    condition: and(succeeded(), ne(stageDependencies.Detect.DetectChanges.outputs['detect.matrix'], '[]'))
+    jobs:
+      - job: BuildProject
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          matrix:
+            ${{ each project in fromJson(stageDependencies.Detect.DetectChanges.outputs['detect.matrix']) }}:
+              ${{ project }}:
+                projectName: ${{ project }}
+        steps:
+          - checkout: self
+          - bash: infrastructure/ci/setup-toolchain.sh $(projectName)
+            displayName: 'Setup toolchain'
+          - bash: make -C projects/$(projectName) lint
+            displayName: 'Lint'
+          - bash: make -C projects/$(projectName) build
+            displayName: 'Build'
+          - bash: make -C projects/$(projectName) test
+            displayName: 'Test'

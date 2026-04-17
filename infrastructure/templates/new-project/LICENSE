@@ -1,0 +1,15 @@
+No license chosen yet.
+
+Choose a license before making any commit. This is enforced by the
+project's CLAUDE.md rules.
+
+From the repository root, run:
+  ./new-project.py <name> --license MIT
+  ./new-project.py <name> --license Apache-2.0
+  ./new-project.py <name> --license GPL-3.0-only
+  ./new-project.py <name> --license LGPL-3.0-only
+  ./new-project.py <name> --license BSD-2-Clause
+  ./new-project.py <name> --license BSD-3-Clause
+
+Or create this file manually with the full license text.
+See infrastructure/docs/design.md "Licensing" section for guidance.

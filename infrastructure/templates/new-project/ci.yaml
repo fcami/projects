@@ -1,0 +1,17 @@
+# {{PROJECT_NAME}} — CI Toolchain Declaration
+#
+# This file tells the CI pipeline what toolchain to install before
+# running the Makefile contract targets. The setup-toolchain.sh script
+# reads this file and installs the appropriate tools.
+#
+# Edit the fields below to match your project's language and version.
+
+language: rust  # rust | python | c | cpp | go | node | other
+version: stable  # language-specific version string
+
+# Extra system packages needed (space-separated, installed via apt/dnf)
+# system_packages: libvirt-devel sqlite-devel
+
+# Extra setup commands (run after toolchain install)
+# setup_commands:
+#   - rustup component add clippy rustfmt

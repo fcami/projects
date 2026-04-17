@@ -1,0 +1,20 @@
+version = 1
+
+[[annotations]]
+path = "infrastructure/templates/new-project/**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 François Cami <contribs@fcami.net>"
+SPDX-License-Identifier = "MIT"
+SPDX-FileComment = "Template files. When copied into a subproject, the copies are\n governed by that subproject's own license. The copyright holder can\n relicense freely; MIT permits third parties to do the same."
+
+[[annotations]]
+path = "projects/.gitkeep"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 François Cami <contribs@fcami.net>"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "LICENSE"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 François Cami <contribs@fcami.net>"
+SPDX-License-Identifier = "MIT"

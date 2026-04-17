@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 François Cami <contribs@fcami.net>
+# SPDX-License-Identifier: MIT
+# GitHub Actions CI — detect changed subprojects, fan out to parallel jobs.
+#
+# Logic lives in infrastructure/ci/ scripts, not here. This file is a thin adapter
+# (Martin: Dependency Inversion — CI config depends on the contract,
+# not on language-specific tooling).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly: run all subprojects regardless of changes (catches dependency rot)
+    - cron: '0 6 * * 1'
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: detect
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # Weekly: run all subprojects
+            MATRIX=$(ls -d projects/*/Makefile 2>/dev/null | xargs -I{} dirname {} | xargs -I{} basename {} | jq -R -s -c 'split("\n") | map(select(. != ""))')
+          else
+            MATRIX=$(infrastructure/ci/detect-changes.sh)
+          fi
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+          echo "Affected subprojects: ${MATRIX}"
+
+  build:
+    needs: detect
+    if: needs.detect.outputs.matrix != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.detect.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup toolchain
+        run: infrastructure/ci/setup-toolchain.sh ${{ matrix.project }}
+      - name: Lint
+        run: make -C projects/${{ matrix.project }} lint
+      - name: Build
+        run: make -C projects/${{ matrix.project }} build
+      - name: Test
+        run: make -C projects/${{ matrix.project }} test
