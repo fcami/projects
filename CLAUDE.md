@@ -61,12 +61,17 @@ See `infrastructure/docs/design.md` "Licensing" for full rules.
 - `infrastructure/ci/detect-changes.sh` — determines which subprojects changed
 - `infrastructure/ci/setup-toolchain.sh` — installs language toolchain per subproject
 - `infrastructure/ci/run-project-ci.sh` — runs lint, build, test for a subproject
+- `infrastructure/ci/make-release.sh` — clean monorepo tarball without subprojects
+  (`make -C infrastructure release`; on `v*` tags, `.github/workflows/release.yaml`)
 
 Infrastructure changes (`infrastructure/`, root files) trigger ALL
 subprojects, after the infrastructure's own contract passes:
 `infrastructure/Makefile` (shellcheck, flake8, `infrastructure/tests/`).
 Run it locally with `infrastructure/ci/run-project-ci.sh infrastructure`.
 Changes to the CI scripts or `new-project.py` need a test there.
+
+The README's subproject list must stay between its `subprojects:start` /
+`subprojects:end` markers: the release replaces that span.
 
 ## Cross-Cutting Changes
 

@@ -1,0 +1,4 @@
+# SPDX-FileCopyrightText: 2026 François Cami <contribs@fcami.net>
+# SPDX-License-Identifier: MIT
+# Release tarballs (make -C infrastructure release)
+/dist/

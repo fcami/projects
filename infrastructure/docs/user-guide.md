@@ -240,7 +240,40 @@ infrastructure/ci/run-project-ci.sh infrastructure
 | Push to `main` | Affected subprojects |
 | Pull request | Affected subprojects |
 | Tag `projects/foo/v*` | That subproject's `make release` |
+| Tag `v*` (e.g. `v1.0.0`) | Clean monorepo tarball, published as a GitHub release |
 | Weekly schedule | ALL subprojects (catches dependency rot) |
+
+## Starting a Clean Monorepo
+
+The monorepo's infrastructure can be released on its own, to start a new
+monorepo with the same tooling and none of the subprojects:
+
+```bash
+git clone git@github.com:fcami/projects.git
+make -C projects/infrastructure release     # writes projects/dist/projects-<version>.tar.gz
+```
+
+The tarball holds the repository as committed at `HEAD`, without git
+metadata and without any subproject: `projects/` keeps only `.gitkeep`,
+the README's subproject list (between the `subprojects:start` /
+`subprojects:end` markers) is reset to its empty placeholder, and license
+texts used only by subprojects are dropped from `LICENSES/`. Unpack it,
+`git init`, and create subprojects with `./new-project.py`.
+
+The clone is never modified: the release is built from `git archive` in a
+temporary directory (uncommitted changes are left out, with a warning).
+`<version>` defaults to `git describe --tags --always`; set it with
+`make -C infrastructure release VERSION=1.0.0`. `make -C infrastructure
+clean` removes `dist/`.
+
+Pushing a `v*` tag does the same in GitHub Actions
+(`.github/workflows/release.yaml`): it runs the infrastructure's CI, builds
+the tarball and publishes it as a GitHub release.
+
+```bash
+git tag -a v1.0.0 -m "v1.0.0"
+git push origin v1.0.0
+```
 
 ## Licensing
 

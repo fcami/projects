@@ -14,9 +14,13 @@ runs their targets in parallel.
 
 Each subproject is licensed independently. See `projects/*/LICENSE`.
 
+<!-- Keep the list between these markers: `make -C infrastructure release`
+     replaces it with an empty placeholder in the clean release tarball. -->
+<!-- subprojects:start -->
 | Project | Language | License | Description |
 |---|---|---|---|
 | [gdkm](projects/gdkm/) | Python | MIT | Move GitHub deploy keys between repositories with one command |
+<!-- subprojects:end -->
 
 ## Quick Start
 
@@ -70,6 +74,11 @@ The CI pipeline (GitHub Actions and Azure Pipelines) automatically:
 3. Sets up the appropriate toolchain per subproject
 4. Runs `lint`, `build`, `test` in parallel per subproject
 5. Runs ALL subprojects, and the infrastructure, weekly to catch dependency rot
+
+Pushing a `v*` tag publishes a clean tarball of the monorepo, without any
+subproject, as a GitHub release; `make -C infrastructure release` builds
+the same tarball locally. See the
+[User Guide](infrastructure/docs/user-guide.md#starting-a-clean-monorepo).
 
 ## Licensing
 

@@ -10,7 +10,10 @@
 SHELL_SCRIPTS := $(wildcard ci/*.sh tests/*.sh)
 PY_SCRIPTS := new-project.py ../new-project.py
 
-.PHONY: build test lint fmt-check fmt clean
+# Release version (default: `git describe --tags --always` of HEAD)
+VERSION ?=
+
+.PHONY: build test lint fmt-check fmt clean release
 
 # Syntax-check every script (nothing to compile)
 build:
@@ -34,6 +37,11 @@ fmt-check:
 fmt:
 	@echo "[infrastructure] no formatter configured"
 
-# Tests clean up after themselves; nothing is built
+# Remove release tarballs (tests clean up after themselves)
 clean:
-	@echo "[infrastructure] nothing to clean"
+	rm -rf ../dist
+
+# Clean tarball of the monorepo without its subprojects, in ../dist/
+# (committed content only; the clone itself is left untouched)
+release:
+	ci/make-release.sh $(VERSION)

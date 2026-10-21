@@ -49,6 +49,7 @@ repo-root/
 │   ├── ci/
 │   │   ├── detect-changes.sh    # Which subprojects changed?
 │   │   ├── lib.sh               # Helpers shared by the CI scripts
+│   │   ├── make-release.sh      # Clean monorepo tarball, no subprojects
 │   │   ├── run-project-ci.sh    # Dispatch to a subproject's contract
 │   │   └── setup-toolchain.sh   # Install language-specific toolchain
 │   ├── docs/
@@ -62,7 +63,8 @@ repo-root/
 │   ├── ci.yaml                  # Its CI toolchain (shellcheck, flake8)
 │   └── new-project.py           # Project creation script
 ├── .github/workflows/
-│   └── ci.yaml                  # GitHub Actions entry point
+│   ├── ci.yaml                  # GitHub Actions entry point
+│   └── release.yaml             # Release on v* tags
 ├── .azure-pipelines/
 │   └── pipeline.yaml            # Azure Pipelines entry point
 ├── new-project.py               # Root wrapper (delegates to infrastructure/)
@@ -252,6 +254,7 @@ jobs:
 - **Push to `main`**: run affected subprojects' full CI.
 - **Pull request**: run affected subprojects' full CI. Report per-subproject status checks.
 - **Tag `projects/foo/v*`**: run `make release` for that subproject. Optionally publish artifacts.
+- **Tag `v*`**: release the monorepo itself. `make -C infrastructure release` builds a clean tarball of the repository without any subproject (no git metadata, empty `projects/`, empty subproject list in the README, no subproject-only license texts), published as a GitHub release. It is the starting point for a new monorepo with the same tooling.
 - **Scheduled (weekly)**: run all subprojects regardless of changes — catches dependency rot, upstream breakage.
 
 Humble and Farley would add: the **commit stage** (lint, build, test) should complete in under 10 minutes. If it doesn't, split slow tests into a second pipeline stage that runs after the commit stage passes. Fast feedback on the common case; thorough validation before merge.
