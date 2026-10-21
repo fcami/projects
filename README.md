@@ -65,9 +65,11 @@ See the [User Guide](infrastructure/docs/user-guide.md) for details.
 The CI pipeline (GitHub Actions and Azure Pipelines) automatically:
 
 1. Detects which subprojects changed
-2. Sets up the appropriate toolchain per subproject
-3. Runs `lint`, `build`, `test` in parallel per subproject
-4. Runs ALL subprojects weekly to catch dependency rot
+2. When the infrastructure changed, runs its own `lint`, `build`, `test`
+   (`infrastructure/Makefile`) first
+3. Sets up the appropriate toolchain per subproject
+4. Runs `lint`, `build`, `test` in parallel per subproject
+5. Runs ALL subprojects, and the infrastructure, weekly to catch dependency rot
 
 ## Licensing
 

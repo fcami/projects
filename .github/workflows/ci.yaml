@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
+      infrastructure: ${{ steps.detect.outputs.infrastructure }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,17 +29,39 @@ jobs:
       - id: detect
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            # Weekly: run all subprojects
+            # Weekly: run all subprojects, and the infrastructure
+            INFRA=true
             MATRIX=$(ls -d projects/*/Makefile 2>/dev/null | xargs -I{} dirname {} | xargs -I{} basename {} | jq -R -s -c 'split("\n") | map(select(. != ""))')
           else
+            INFRA=$(infrastructure/ci/detect-changes.sh --infrastructure)
             MATRIX=$(infrastructure/ci/detect-changes.sh)
           fi
+          echo "infrastructure=${INFRA}" >> "$GITHUB_OUTPUT"
           echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+          echo "Infrastructure changed: ${INFRA}"
           echo "Affected subprojects: ${MATRIX}"
 
-  build:
+  # The monorepo tooling runs its own contract (infrastructure/Makefile)
+  # before any subproject, since every subproject depends on it.
+  infrastructure:
     needs: detect
-    if: needs.detect.outputs.matrix != '[]'
+    if: needs.detect.outputs.infrastructure == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup toolchain
+        run: infrastructure/ci/setup-toolchain.sh infrastructure
+      - name: Lint, build, test
+        run: infrastructure/ci/run-project-ci.sh infrastructure
+
+  build:
+    needs: [detect, infrastructure]
+    # Run when infrastructure passed or was skipped (not when it failed)
+    if: >-
+      ${{ !cancelled()
+      && needs.detect.result == 'success'
+      && needs.infrastructure.result != 'failure'
+      && needs.detect.outputs.matrix != '[]' }}
     strategy:
       fail-fast: false
       matrix:

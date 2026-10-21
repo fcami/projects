@@ -33,18 +33,44 @@ stages:
             fetchDepth: 0
           - bash: |
               if [ "$(Build.Reason)" = "Schedule" ]; then
+                INFRA=true
                 MATRIX=$(ls -d projects/*/Makefile 2>/dev/null | xargs -I{} dirname {} | xargs -I{} basename {} | jq -R -s -c 'split("\n") | map(select(. != ""))')
               else
+                INFRA=$(infrastructure/ci/detect-changes.sh --infrastructure)
                 MATRIX=$(infrastructure/ci/detect-changes.sh)
               fi
+              echo "##vso[task.setvariable variable=infrastructure;isOutput=true]${INFRA}"
               echo "##vso[task.setvariable variable=matrix;isOutput=true]${MATRIX}"
+              echo "Infrastructure changed: ${INFRA}"
               echo "Affected subprojects: ${MATRIX}"
             name: detect
             displayName: 'Detect changed subprojects'
 
-  - stage: Build
+  # The monorepo tooling runs its own contract (infrastructure/Makefile)
+  # before any subproject, since every subproject depends on it.
+  - stage: Infrastructure
     dependsOn: Detect
-    condition: and(succeeded(), ne(stageDependencies.Detect.DetectChanges.outputs['detect.matrix'], '[]'))
+    condition: and(succeeded(), eq(dependencies.Detect.outputs['DetectChanges.detect.infrastructure'], 'true'))
+    jobs:
+      - job: BuildInfrastructure
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+          - bash: infrastructure/ci/setup-toolchain.sh infrastructure
+            displayName: 'Setup toolchain'
+          - bash: infrastructure/ci/run-project-ci.sh infrastructure
+            displayName: 'Lint, build, test'
+
+  - stage: Build
+    dependsOn:
+      - Detect
+      - Infrastructure
+    # Run when Infrastructure passed or was skipped (not when it failed)
+    condition: >-
+      and(eq(dependencies.Detect.result, 'Succeeded'),
+      in(dependencies.Infrastructure.result, 'Succeeded', 'Skipped'),
+      ne(dependencies.Detect.outputs['DetectChanges.detect.matrix'], '[]'))
     jobs:
       - job: BuildProject
         pool:

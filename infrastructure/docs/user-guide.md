@@ -212,7 +212,10 @@ Document the original repository URL in the project's README.
 2. **Fan-out**: each affected subproject gets a parallel CI job that
    runs `lint → build → test`.
 3. **Infrastructure changes** (`infrastructure/`, `.github/`, `.azure-pipelines/`,
-   `CLAUDE.md`, `LICENSE`, `REUSE.toml`, `LICENSES/`) trigger ALL subprojects.
+   `CLAUDE.md`, `LICENSE`, `REUSE.toml`, `LICENSES/`, `new-project.py`) trigger
+   ALL subprojects. They first run the infrastructure's own contract
+   (`infrastructure/Makefile`: shellcheck, flake8, and the tests in
+   `infrastructure/tests/`); if that fails, no subproject runs.
 
 ### Running CI locally
 
@@ -225,6 +228,9 @@ infrastructure/ci/detect-changes.sh
 
 # Set up the toolchain for a subproject (usually not needed locally)
 infrastructure/ci/setup-toolchain.sh my-tool
+
+# Run CI for the infrastructure itself (needs shellcheck and flake8)
+infrastructure/ci/run-project-ci.sh infrastructure
 ```
 
 ### Triggers

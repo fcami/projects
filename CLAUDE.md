@@ -63,7 +63,10 @@ See `infrastructure/docs/design.md` "Licensing" for full rules.
 - `infrastructure/ci/run-project-ci.sh` — runs lint, build, test for a subproject
 
 Infrastructure changes (`infrastructure/`, root files) trigger ALL
-subprojects.
+subprojects, after the infrastructure's own contract passes:
+`infrastructure/Makefile` (shellcheck, flake8, `infrastructure/tests/`).
+Run it locally with `infrastructure/ci/run-project-ci.sh infrastructure`.
+Changes to the CI scripts or `new-project.py` need a test there.
 
 ## Cross-Cutting Changes
 

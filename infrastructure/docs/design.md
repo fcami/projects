@@ -48,6 +48,7 @@ repo-root/
 ├── infrastructure/
 │   ├── ci/
 │   │   ├── detect-changes.sh    # Which subprojects changed?
+│   │   ├── lib.sh               # Helpers shared by the CI scripts
 │   │   ├── run-project-ci.sh    # Dispatch to a subproject's contract
 │   │   └── setup-toolchain.sh   # Install language-specific toolchain
 │   ├── docs/
@@ -56,6 +57,9 @@ repo-root/
 │   │   └── llm-prompts.md       # Prompts for LLM-assisted work
 │   ├── templates/
 │   │   └── new-project/         # Scaffold for new subprojects
+│   ├── tests/                   # Tests for the CI scripts and new-project.py
+│   ├── Makefile                 # The uniform contract, for the infrastructure
+│   ├── ci.yaml                  # Its CI toolchain (shellcheck, flake8)
 │   └── new-project.py           # Project creation script
 ├── .github/workflows/
 │   └── ci.yaml                  # GitHub Actions entry point
@@ -111,6 +115,8 @@ These three principles are in tension — REP and CCP push toward larger subproj
 This is where **Lakos's physical design** thinking meets **Humble and Farley's deployment pipeline** thinking. The CI pipeline has two stages:
 
 **Stage 1 — Detect.** Compare the changeset against `projects/*/`. Produce a list of affected subprojects. If `infrastructure/ci/` or root config changed, mark all subprojects affected.
+
+**Stage 1b — Infrastructure.** When the infrastructure itself changed, it runs its own contract (`infrastructure/Makefile`: shellcheck and flake8 for `lint`, a bash test suite for `test`) before any subproject, and the fan-out is skipped if it fails. The tooling every subproject depends on is held to the same contract as the subprojects. It stays in `infrastructure/`, not `projects/`: it is not an independent subproject, and its changes must keep triggering every subproject. The CI scripts accept the reserved name `infrastructure` for it, and `new-project.py` refuses that name.
 
 **Stage 2 — Fan-out.** For each affected subproject, run the contract targets in a parallel job/matrix entry. Each subproject builds and tests in isolation.
 
