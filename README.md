@@ -14,7 +14,9 @@ runs their targets in parallel.
 
 Each subproject is licensed independently. See `projects/*/LICENSE`.
 
-(No subprojects yet. Create one with `./new-project.py`.)
+| Project | Language | License | Description |
+|---|---|---|---|
+| [gdkm](projects/gdkm/) | Python | MIT | Move GitHub deploy keys between repositories with one command |
 
 ## Quick Start
 

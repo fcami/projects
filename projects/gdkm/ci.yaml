@@ -1,0 +1,19 @@
+# gdkm — CI Toolchain Declaration
+#
+# This file tells the CI pipeline what toolchain to install before
+# running the Makefile contract targets. The setup-toolchain.sh script
+# reads this file and installs the appropriate tools.
+#
+# Edit the fields below to match your project's language and version.
+
+language: python  # rust | python | c | cpp | go | node | other
+version: 3  # language-specific version string
+
+# Extra system packages needed (space-separated, installed via apt/dnf)
+# Debian/Ubuntu names (CI runs on ubuntu-latest); on Fedora the linters
+# are python3-flake8 and python3-pylint.
+system_packages: python3-tomlkit black flake8 pylint
+
+# Extra setup commands (run after toolchain install)
+# setup_commands:
+#   - rustup component add clippy rustfmt

@@ -1,0 +1,16 @@
+# Hand-edited parts: github_user, keys.*.pubkey. The tool maintains the rest.
+github_user = "fcami"
+
+# Repositories this tool manages (auto-extended on use).
+repos = ["fcami/foo", "some-org/bar"]
+
+# Public keys only. Replace the example blobs with your own .pub lines.
+[keys.laptop]
+pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4f laptop@example"
+repo = "fcami/foo"   # where the key is attached now ("" = attached nowhere)
+mode = "ro"          # "ro" or "rw"
+
+[keys.ci]
+pubkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g ci@example"
+repo = ""
+mode = "ro"
