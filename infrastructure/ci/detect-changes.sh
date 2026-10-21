@@ -6,14 +6,24 @@
 # Outputs a JSON array of subproject directory names, e.g.: ["project-a","project-c"]
 # If infrastructure/ or root config files changed, ALL subprojects are affected.
 #
+# With --infrastructure, outputs "true" or "false" instead: whether the
+# monorepo infrastructure itself changed (CI then runs its own contract).
+#
 # Usage:
 #   infrastructure/ci/detect-changes.sh              # auto-detect: PR base or HEAD~1
 #   infrastructure/ci/detect-changes.sh <base_ref>   # explicit base ref
+#   infrastructure/ci/detect-changes.sh --infrastructure [<base_ref>]
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO_ROOT"
+
+MODE=projects
+if [ "${1:-}" = "--infrastructure" ]; then
+    MODE=infrastructure
+    shift
+fi
 
 # Determine the base commit to diff against
 if [ $# -ge 1 ]; then
@@ -43,12 +53,17 @@ fi
 INFRA_CHANGED=false
 while IFS= read -r file; do
     case "$file" in
-        infrastructure/*|.github/*|.azure-pipelines/*|CLAUDE.md|LICENSE|REUSE.toml|LICENSES/*)
+        infrastructure/*|.github/*|.azure-pipelines/*|CLAUDE.md|LICENSE|REUSE.toml|LICENSES/*|new-project.py)
             INFRA_CHANGED=true
             break
             ;;
     esac
 done <<< "$CHANGED_FILES"
+
+if [ "$MODE" = infrastructure ]; then
+    echo "$INFRA_CHANGED"
+    exit 0
+fi
 
 # Collect affected subprojects
 declare -A AFFECTED

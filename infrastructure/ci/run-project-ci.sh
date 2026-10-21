@@ -7,6 +7,9 @@
 # Exit code is 0 if all pass, non-zero on first failure.
 #
 # Usage: infrastructure/ci/run-project-ci.sh <project-name>
+#
+# <project-name> is a directory under projects/, or "infrastructure" for
+# the monorepo tooling itself.
 
 set -euo pipefail
 
@@ -17,7 +20,9 @@ fi
 
 PROJECT="$1"
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-PROJECT_DIR="${REPO_ROOT}/projects/${PROJECT}"
+# shellcheck source=SCRIPTDIR/lib.sh
+. "$(dirname "$0")/lib.sh"
+PROJECT_DIR="$(project_dir "$REPO_ROOT" "$PROJECT")"
 
 if [ ! -d "$PROJECT_DIR" ]; then
     echo "Error: project directory not found: ${PROJECT_DIR}" >&2

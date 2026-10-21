@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 # setup-toolchain.sh — Install the toolchain for a subproject.
 #
-# Reads projects/$PROJECT/ci.yaml to determine language, version,
+# Reads projects/$PROJECT/ci.yaml (infrastructure/ci.yaml for the
+# project named "infrastructure") to determine language, version,
 # and any extra system packages or setup commands.
 #
 # Usage: infrastructure/ci/setup-toolchain.sh <project-name>
@@ -17,7 +18,9 @@ fi
 
 PROJECT="$1"
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-CI_YAML="${REPO_ROOT}/projects/${PROJECT}/ci.yaml"
+# shellcheck source=SCRIPTDIR/lib.sh
+. "$(dirname "$0")/lib.sh"
+CI_YAML="$(project_dir "$REPO_ROOT" "$PROJECT")/ci.yaml"
 
 if [ ! -f "$CI_YAML" ]; then
     echo "Warning: ${CI_YAML} not found, skipping toolchain setup" >&2

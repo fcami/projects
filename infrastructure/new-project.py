@@ -32,6 +32,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 TEMPLATE_DIR = os.path.join(SCRIPT_DIR, "templates", "new-project")
 PROJECTS_DIR = os.path.join(REPO_ROOT, "projects")
+# CI scripts resolve this project name to infrastructure/, not projects/
+RESERVED_NAMES = {"infrastructure"}
 
 LICENSE_HEADERS = {
     "MIT": "MIT License\n\nCopyright (c) {year} {author}\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n",
@@ -141,6 +143,11 @@ def main():
                         help="Author name for LICENSE file (default: git user.name)")
     args = parser.parse_args()
 
+    if args.name in RESERVED_NAMES:
+        print(f"Error: {args.name!r} is reserved (CI uses it for the monorepo "
+              "tooling)", file=sys.stderr)
+        sys.exit(1)
+
     project_dir = os.path.join(PROJECTS_DIR, args.name)
 
     if os.path.exists(project_dir):
@@ -212,13 +219,13 @@ def main():
     print()
     print("Next steps:")
     print(f"  1. Edit projects/{args.name}/Makefile — uncomment the {args.language} block")
-    print(f"     and wire up your build/test/lint commands")
+    print("     and wire up your build/test/lint commands")
     print(f"  2. Edit projects/{args.name}/README.md — describe the project")
     print(f"  3. Write code in projects/{args.name}/src/")
     print(f"  4. Write tests in projects/{args.name}/tests/")
     print(f"  5. Verify: make -C projects/{args.name} lint build test")
-    print(f"  6. Verify: reuse lint")
-    print(f"  7. Commit and push — CI picks it up automatically")
+    print("  6. Verify: reuse lint")
+    print("  7. Commit and push — CI picks it up automatically")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2026 François Cami <contribs@fcami.net>
+# SPDX-License-Identifier: MIT
+# infrastructure — CI Toolchain Declaration
+#
+# Read by setup-toolchain.sh for the project named "infrastructure":
+# the monorepo tooling itself (CI scripts, new-project.py, templates).
+
+language: other
+
+# Debian/Ubuntu names (CI runs on ubuntu-latest). On Fedora:
+# ShellCheck python3-flake8.
+system_packages: shellcheck flake8
