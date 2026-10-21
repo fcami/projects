@@ -34,7 +34,7 @@ fi
 
 # Get list of changed files
 if [ "$BASE" = "--root" ]; then
-    CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+    CHANGED_FILES=$(git diff-tree --root --no-commit-id --name-only -r HEAD)
 else
     CHANGED_FILES=$(git diff --name-only "$BASE"...HEAD 2>/dev/null || git diff --name-only "$BASE" HEAD)
 fi
