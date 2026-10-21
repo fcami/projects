@@ -24,9 +24,13 @@ if [ ! -f "$CI_YAML" ]; then
     exit 0
 fi
 
-# Parse ci.yaml (portable: grep + sed, no yq dependency)
+# Parse ci.yaml (portable: grep + sed, no yq dependency).
+# Inline comments ("language: rust  # ...", as in the template) are
+# stripped; as in YAML, a comment starts with whitespace followed by '#'.
 parse_yaml_field() {
-    grep "^${1}:" "$CI_YAML" 2>/dev/null | sed "s/^${1}:[[:space:]]*//" | tr -d '"' || true
+    grep "^${1}:" "$CI_YAML" 2>/dev/null \
+        | sed -e "s/^${1}:[[:space:]]*//" -e 's/[[:space:]]\{1,\}#.*$//' -e 's/[[:space:]]*$//' \
+        | tr -d '"' || true
 }
 
 LANGUAGE=$(parse_yaml_field "language")
